@@ -157,15 +157,39 @@ def create_grid(locked_positions={}):
     return grid
 
 def convert_shape_format(shape):
-    pass
+    positions = []
+    format = shape.shape[shape.rotation % len(shape.shape)]
+
+    for i, line in enumerate(format):
+        row = list(line)
+        for j, column in enumerate(row):
+            if column == '0':
+                positions.append((shape.x + j, shape.y + i))
+        for i pos in enumerate(positions):
+            positions[i] = (pos[0] - 2, pos[1] - 4)
+
+
 
 
 def valid_space(shape, grid):
-    pass
+    accepted_pos = [[(j, i) for j in range(10) if grid[i][j] == (0,0,0)] for i in range(20)]
+    accepted_pos = [j for sub in accepted_pos for j in sub]
+
+    formatted = convert_shape_format(shape)
+
+    for pos in formatted:
+        if pos not in accepted_pos:
+            if pos[1] > -1:
+                return False
+    return True
 
 
 def check_lost(positions):
-    pass
+    for pos in positions:
+        x, y = pos
+        if y < 1:
+            return True
+    return False
 
 
 def get_shape():
@@ -177,11 +201,14 @@ def draw_text_middle(text, size, color, surface):
 
 
 def draw_grid(surface, grid):
-    for i in range(len(grid)):
-        for j in range(len(grid[i])):
-            pygame.draw.rect(surface, grid[i][j], (top_left_x + j*block_size, top_left_y+ i*block_size, block_size, block_size), 0)
+    sx = top_left_x
+    sy = top_left_y
 
-    pygame.draw.rect(surface, (255,0,0), (top_left_x, top_left_y, play_width, play_height, 4)
+    for i in range(len(grid)):
+        pygame.draw.line(surface, 128,128,128), (sx, sy+ i*block_size), (sx+play_width, sy+i*block_size))
+        for j in range(len(grid[i])):
+            pygame.draw.line(surface, 128, 128, 128), (sx + j*block_size, sy), (sx + j*block_size, sy + play_height))
+
 
 
 def clear_rows(grid, locked):
@@ -198,6 +225,12 @@ def draw_window(surface, grid):
     label = font.render('Tetrominos', 1, (255,255,255))
 
     surface.blitz(label, (top_left_x + play_width/2 - (label.get_width()/2), 30))
+
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            pygame.draw.rect(surface, grid[i][j], (top_left_x + j*block_size, top_left_y+ i*block_size, block_size, block_size), 0)
+
+    pygame.draw.rect(surface, (255,0,0), (top_left_x, top_left_y, play_width, play_height, 5)
 
     draw_grid(surface, grid)
     pygame.display.update()
