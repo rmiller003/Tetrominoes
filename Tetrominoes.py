@@ -17,7 +17,7 @@ represented in order by 0 - 6
 """
 
 pygame.font.init()
-#pygame.mixer.init()
+pygame.mixer.init()
 
 # GLOBALS VARS
 s_width = 800
@@ -388,8 +388,8 @@ def main():
             # call four times to check for multiple clear rows
         rows_cleared = clear_rows(grid, locked_positions)
         score += rows_cleared * 10
-        #if rows_cleared > 0:
-            #pygame.mixer.Sound('clear.wav').play()
+        if rows_cleared > 0:
+            pygame.mixer.Sound('clear.ogg').play()
 
         draw_window(win, score)
         draw_next_shape(next_piece, win)
@@ -401,8 +401,8 @@ def main():
 
     draw_window(win, score)
     draw_text_middle("You Lost", 40, (255, 255, 255), win)
-    #pygame.mixer.music.stop()
-    #pygame.mixer.Sound('game_over.wav').play()
+    pygame.mixer.music.stop()
+    pygame.mixer.Sound('game_over.ogg').play()
     pygame.display.update()
     pygame.time.delay(2000)
     main_menu()
@@ -418,10 +418,10 @@ def main_menu():
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.KEYDOWN:
-                #pygame.mixer.music.load('music.mp3')
-                #pygame.mixer.music.play(-1)
+                pygame.mixer.music.load('music.ogg')
+                pygame.mixer.music.play(-1)
                 main()
-    pygame.display.quit()
+                pygame.display.quit()
 
 
 win = pygame.display.set_mode((s_width, s_height))
