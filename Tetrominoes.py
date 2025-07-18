@@ -17,6 +17,7 @@ represented in order by 0 - 6
 """
 
 pygame.font.init()
+#pygame.mixer.init()
 
 # GLOBALS VARS
 s_width = 800
@@ -176,7 +177,7 @@ def convert_shape_format(shape):
     for i, pos in enumerate(positions):
         positions[i] = (pos[0] - 2, pos[1] - 4)
 
-        return positions
+    return positions
 
 
 def valid_space(shape, grid):
@@ -246,6 +247,7 @@ def clear_rows(grid, locked):
             if y < ind:
                 newKey = (x, y + inc)
                 locked[newKey] = locked.pop(key)
+    return inc
 
 
 def draw_next_shape(shape, surface):
@@ -258,20 +260,29 @@ def draw_next_shape(shape, surface):
 
     for i, line in enumerate(format):
         row = list(line)
-    for j, column in enumerate(row):
-        if column == '0':
-            pygame.draw.rect(surface, shape.color, (sx + j * 30, sy + i * 30, 30, 30), 0)
+        for j, column in enumerate(row):
+            if column == '0':
+                pygame.draw.rect(surface, shape.color, (sx + j * 30, sy + i * 30, 30, 30), 0)
 
     surface.blit(label, (sx + 10, sy - 30))
 
 
-def draw_window(surface):
+def draw_window(surface, score=0):
     surface.fill((0, 0, 0))
     # Tetris Title
     font = pygame.font.SysFont('comicsans', 60)
     label = font.render('TETROMINOES', 1, (255, 255, 255))
 
     surface.blit(label, (top_left_x + play_width / 2 - (label.get_width() / 2), 30))
+
+    # score
+    font = pygame.font.SysFont('comicsans', 30)
+    label = font.render('Score: ' + str(score), 1, (255, 255, 255))
+
+    sx = top_left_x + play_width + 50
+    sy = top_left_y + play_height / 2 - 100
+
+    surface.blit(label, (sx + 20, sy + 160))
 
     for i in range(len(grid)):
         for j in range(len(grid[i])):
@@ -295,13 +306,21 @@ def main():
     next_piece = get_shape()
     clock = pygame.time.Clock()
     fall_time = 0
+    score = 0
+    level_time = 0
 
     while run:
         fall_speed = 0.27
 
         grid = create_grid(locked_positions)
         fall_time += clock.get_rawtime()
+        level_time += clock.get_rawtime()
         clock.tick()
+
+        if level_time / 1000 > 5:
+            level_time = 0
+            if fall_speed > 0.12:
+                fall_speed -= 0.005
 
         # PIECE FALLING CODE
         if fall_time / 1000 >= fall_speed:
@@ -339,44 +358,54 @@ def main():
                     if not valid_space(current_piece, grid):
                         current_piece.y -= 1
 
-                '''if event.key == pygame.K_SPACE:
-                while valid_space(current_piece, grid):
-                    current_piece.y += 1
-                current_piece.y -= 1
-                print(convert_shape_format(current_piece))'''  # todo fix
+                if event.key == pygame.K_SPACE:
+                    while valid_space(current_piece, grid):
+                        current_piece.y += 1
+                    current_piece.y -= 1
+                    print(convert_shape_format(current_piece))  # todo fix
 
-    shape_pos = convert_shape_format(current_piece)
+                if event.key == pygame.K_p:
+                    run = False
+                    main_menu()
 
-    # add piece to the grid for drawing
-    for i in range(len(shape_pos)):
-        x, y = shape_pos[i]
-        if y > -1:
-            grid[y][x] = current_piece.color
+        shape_pos = convert_shape_format(current_piece)
 
-    # IF PIECE HIT GROUND
-    if change_piece:
-        for pos in shape_pos:
-            p = (pos[0], pos[1])
-            locked_positions[p] = current_piece.color
-        current_piece = next_piece
-        next_piece = get_shape()
-        change_piece = False
+        # add piece to the grid for drawing
+        for i in range(len(shape_pos)):
+            x, y = shape_pos[i]
+            if y > -1:
+                grid[y][x] = current_piece.color
 
-        # call four times to check for multiple clear rows
-        clear_rows(grid, locked_positions)
+        # IF PIECE HIT GROUND
+        if change_piece:
+            for pos in shape_pos:
+                p = (pos[0], pos[1])
+                locked_positions[p] = current_piece.color
+            current_piece = next_piece
+            next_piece = get_shape()
+            change_piece = False
 
-        draw_window(win)
+            # call four times to check for multiple clear rows
+        rows_cleared = clear_rows(grid, locked_positions)
+        score += rows_cleared * 10
+        #if rows_cleared > 0:
+            #pygame.mixer.Sound('clear.wav').play()
+
+        draw_window(win, score)
         draw_next_shape(next_piece, win)
         pygame.display.update()
 
-    # Check if user lost
+        # Check if user lost
         if check_lost(locked_positions):
             run = False
 
-
+    draw_window(win, score)
     draw_text_middle("You Lost", 40, (255, 255, 255), win)
+    #pygame.mixer.music.stop()
+    #pygame.mixer.Sound('game_over.wav').play()
     pygame.display.update()
     pygame.time.delay(2000)
+    main_menu()
 
 
 def main_menu():
@@ -388,13 +417,13 @@ def main_menu():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-
             if event.type == pygame.KEYDOWN:
+                #pygame.mixer.music.load('music.mp3')
+                #pygame.mixer.music.play(-1)
                 main()
+    pygame.display.quit()
 
-        pygame.quit()
 
 win = pygame.display.set_mode((s_width, s_height))
-pygame.display.set_caption('Tetrominose')
-
+pygame.display.set_caption('Tetrominoes')
 main_menu()  # start game
