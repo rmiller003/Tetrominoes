@@ -270,8 +270,8 @@ def draw_next_shape(shape, surface):
 def draw_window(surface, score=0):
     surface.fill((0, 0, 0))
     # Tetris Title
-    font = pygame.font.SysFont('comicsans', 60)
-    label = font.render('TETROMINOES', 1, (255, 255, 255))
+    font = pygame.font.SysFont('comicsans', 60, bold=True)
+    label = font.render('Tetronix', 1, (255, 255, 255))
 
     surface.blit(label, (top_left_x + play_width / 2 - (label.get_width() / 2), 30))
 
@@ -425,5 +425,5 @@ def main_menu():
 
 
 win = pygame.display.set_mode((s_width, s_height))
-pygame.display.set_caption('Tetrominoes')
+pygame.display.set_caption('Tetronix')
 main_menu()  # start game
